@@ -1,5 +1,5 @@
 // Base URL of the FastAPI backend. Override with VITE_API_URL in frontend/.env.local
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 async function request(path, options = {}) {
   const response = await fetch(`${BASE_URL}${path}`, options);
