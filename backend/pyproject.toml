@@ -3,6 +3,7 @@ name = "apartment-xp"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "aiosqlite>=0.22.1",
     "asyncpg>=0.32.0",
     "fastapi>=0.144.0",
     "greenlet>=3.5.6",

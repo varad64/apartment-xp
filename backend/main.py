@@ -140,7 +140,7 @@ async def create_service(
     await session.refresh(service)
     return service
 
-@app.get("/api/v1/services/due-reminders", response_model=List[RecurringService])
+@app.get("/api/v1/services/due-reminders", response_model=list[RecurringService])
 async def get_due_reminders(session: AsyncSession = Depends(get_session)):
     """
     Returns all active services where today has passed the reminder alert window.
