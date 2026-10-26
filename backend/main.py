@@ -6,6 +6,12 @@ from bill_extractor import parse_bill_gemma
 from fastapi.middleware.cors import CORSMiddleware
 from load_dotenv import load_dotenv
 
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from database import init_db, get_session
+from models import RecurringService, ServiceLog
+
 from model import Flat, ResolvedBill, FlatShare
 from constants import create_flats
 
@@ -14,6 +20,11 @@ load_dotenv()
 APARTMENT_NAME = os.getenv("APARTMENT_NAME")
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -118,3 +129,34 @@ def compute_shares(total_amount: Decimal, total_area) -> list[FlatShare]:
         largest.share_amount += discrepancy
 
     return shares
+
+@app.post("/api/v1/services", response_model=RecurringService)
+async def create_service(
+    service: RecurringService,
+    session: AsyncSession = Depends(get_session)
+):
+    session.add(service)
+    await session.commit()
+    await session.refresh(service)
+    return service
+
+@app.get("/api/v1/services/due-reminders", response_model=List[RecurringService])
+async def get_due_reminders(session: AsyncSession = Depends(get_session)):
+    """
+    Returns all active services where today has passed the reminder alert window.
+    """
+    today = date.today()
+    statement = select(RecurringService).where(
+        RecurringService.is_active == True,
+        RecurringService.next_due_date <= today + timedelta(days=14)
+    ).order_by(RecurringService.next_due_date)
+    
+    result = await session.exec(statement)
+    services = result.all()
+    
+    # Filter by each service's customized reminder threshold
+    due_services = [
+        s for s in services 
+        if (s.next_due_date - today).days <= s.reminder_days_before
+    ]
+    return due_services

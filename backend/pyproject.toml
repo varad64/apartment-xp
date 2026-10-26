@@ -3,11 +3,14 @@ name = "apartment-xp"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "asyncpg>=0.32.0",
     "fastapi>=0.144.0",
     "httpie>=3.2.4",
     "load-dotenv>=0.1.0",
     "openai>=3.35.1",
     "pydantic>=2.14.1",
     "python-multipart>=0.0.32",
+    "sqlalchemy>=2.0.55",
+    "sqlmodel>=0.0.48",
     "uvicorn>=0.54.0",
 ]
